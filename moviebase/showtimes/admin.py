@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from showtimes import models
+
+admin.site.register(models.Cinema)
+admin.site.register(models.Screening)

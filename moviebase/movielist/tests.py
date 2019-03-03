@@ -8,6 +8,7 @@ from movielist.serializers import MovieSerializer
 
 
 class MovieTestCase(APITestCase):
+    ID = 0
 
     def setUp(self):
         """Populate test database with random data."""
@@ -75,7 +76,8 @@ class MovieTestCase(APITestCase):
         self.assertEqual(Movie.objects.count(), len(response.data))
 
     def test_get_movie_detail(self):
-        response = self.client.get("/movies/1/", {}, format='json')
+        idx = Movie.objects.all().first().id
+        response = self.client.get("/movies/{}/".format(idx), {}, format='json')
         self.assertEqual(response.status_code, 200)
         for field in ["title", "year", "description", "director", "actors"]:
             self.assertIn(field, response.data)
@@ -87,15 +89,18 @@ class MovieTestCase(APITestCase):
         self.assertNotIn(1, movie_ids)
 
     def test_update_movie(self):
-        response = self.client.get("/movies/1/", {}, format='json')
+        idx = Movie.objects.all().first().id
+        response = self.client.get("/movies/{}/".format(idx), {}, format='json')
         movie_data = response.data
         new_year = 3
         movie_data["year"] = new_year
         new_actors = [self._random_person().name]
         movie_data["actors"] = new_actors
-        response = self.client.patch("/movies/1/", movie_data, format='json')
+        response = self.client.patch("/movies/{}/".format(idx), movie_data, format='json')
         self.assertEqual(response.status_code, 200)
-        movie_obj = Movie.objects.get(id=1)
+        movie_obj = Movie.objects.get(id=idx)
         self.assertEqual(movie_obj.year, new_year)
         db_actor_names = [actor.name for actor in movie_obj.actors.all()]
         self.assertCountEqual(db_actor_names, new_actors)
+
+
